@@ -1,12 +1,82 @@
 \chapter{Алгебра}
 \section{Алгоритм Евклида}
-\[
+\subsection{НОД, НОК (gcd, lcm)}
+$
 	gcd(a, b) = 
 		\begin{cases}
 			a &\text{если } a = 0 \\
 			b & \text{иначе}
 		\end{cases}
-\]
+$
+\newline
+$lcm(a, b) = \frac{a \cdot b}{gcd(a, b)}$
+
+\subsection{Расширенный алгоритм Евклида}
+\begin{lstlisting}[language=C++]
+int gcdex (int a, int b, int & x, int & y) {
+	if (a == 0) {
+		x = 0; y = 1;
+		return b;
+	}
+	int x1, y1;
+	int d = gcd (b%a, a, x1, y1);
+	x = y1 - (b / a) * x1;
+	y = x1;
+	return d;
+}
+\end{lstlisting}
+Функция возвращает нод и коеффициенты $x$, $y$ по сслыкам
+
+\subsection{Восстановление в кольце по модулю}
+\begin{lstlisting}[language=C++]
+int x, y;
+int g = gcdex (a, m, x, y);
+if (g != 1)
+	cout << "no solution";
+else {
+	x = (x % m + m) % m;
+	cout << x;
+}
+\end{lstlisting}
+
+\section{Решето Эратосфена}
+\subsection{Классический вариант}
+Дано число n. Требуется найти все простые в отрезке $[2; n]$.
+Решето Эратосфена решает эту задачу за $O (n \log \log n)$ \newline
+Запишем ряд чисел $1 \ldots n$, и будем вычеркивать сначала все числа, делящиеся на $2$, кроме самого числа $2$, затем деляющиеся на $3$, кроме самого числа $3$, затем на $5$ и так далее $\ldots$
+\begin{lstlisting}[language=C++]
+int n;
+vector<char> prime (n+1, true);
+prime[0] = prime[1] = false;
+for (int i=2; i<=n; ++i)
+	if (prime[i])
+		if (i * 1ll * i <= n)
+			for (int j=i*i; j<=n; j+=i)
+				prime[j] = false;
+\end{lstlisting}
+
+\subsection{Линейное решето}
+Чуть быстрее по времени, чем классическое $O (N)$. Цена вопроса - оверхед по памяти.\
+Пусть $lp[i]$ -- минимальный простой делитель числа $i, 2\leq i\leq n$. \
+\begin{itemize}
+\item $lp[i] = 0$ -- число $i$ -- простое
+\item $lp[i] \neq 0$ -- число $i$ -- составное
+\end{itemize}
+\begin{lstlisting}[language=C++]
+const int N = 10000000;
+int lp[N+1];
+vector<int> pr;
+ 
+for (int i=2; i<=N; ++i) {
+	if (lp[i] == 0) {
+		lp[i] = i;
+		pr.push_back (i);
+	}
+	for (int j=0; j<(int)pr.size() && pr[j]<=lp[i] && i*pr[j]<=N; ++j)
+		lp[i * pr[j]] = pr[j];
+}
+\end{lstlisting}
+Вектор $lp[\ ]$ можно как-то использовать для факторизации чисел
 
 \section{Разбор выражений}
 Дано выражение. Начинаем парсить его функцией E1, которая обрабатывает самые низкоприоритетные операции (в нашем случае '+', '-').
