@@ -140,3 +140,51 @@ int main(){
     }
 }
 \end{lstlisting}
+\subsection{Компоненты сильной связности O(n + m)}
+Решим эту задачу за несколько обходов в глубину. Сначала топологически (по времени выхода) отсортируем граф, затем обойдем транспонированый(инвертированый) граф в этом порядке. Найденые компоненты связности этого графа и будут компонентами сильной связности исходного графа.
+\begin{lstlisting}[language=C++]
+vector < vector<int> > g, gr; // граф и транспортированый граф
+vector<char> used;
+vector<int> order, component; // порядок топ сорта и компонента сильной связности
+ 
+void dfs1 (int v) {
+	used[v] = true;
+	for (int i = 0; i < g[v].size(); i++)
+		if (!used[g[v][i]])
+			dfs1(g[v][i]);
+	order.push_back(v);
+}
+ 
+void dfs2 (int v) {
+	used[v] = true;
+	component.push_back(v);
+	for (int i = 0; i < gr[v].size(); i++)
+		if (!used[gr[v][i]])
+			dfs2(gr[v][i]);
+}
+ 
+int main() {
+	int n, m;
+	cin >> n >> m;
+	for (int i = 0; i < m; i++){
+		int a, b;
+		cin >> a >> b;
+		g[a].push_back(b);
+		gr[b].push_back(a);
+	}
+ 
+	used.assign(n, false);
+	for (int i = 0; i < n; i++)
+		if (!used[i])
+			dfs1(i);
+	used.assign(n, false);
+	for (int i = 0; i < n; i++) {
+		int v = order[n - 1 - i];
+		if (!used[v]) {
+			dfs2 (v);
+			... вывод component ...
+			component.clear();
+		}
+	}
+}
+\end{lstlisting}
