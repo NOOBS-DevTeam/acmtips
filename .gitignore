@@ -1,3 +1,5 @@
+*.thm
+*.out
 *.log
 *.aux
 *.toc
