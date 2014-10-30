@@ -280,3 +280,40 @@ int main() {
 			printf ("%d %d\n", mt[i]+1, i+1);
 }
 \end{lstlisting}
+\subsection{Точки сочленения}
+Алгоритм для связного графа. Запустим поиск в глубину от произвольной вершины. Основная идея алгоритма: вершина является точка сочлинения, тогда и только тогда, когда невозможно попасть в предков этой вершины из её сыновей. Исключение составляет лишь вершина старта $dfs$, ведь у нее нет предков. Она будет точкой сочленения, если у нее больше одного сына, выевленного поиском в глубину
+\begin{lstlisting}[language=C++]
+vector<int> g[MAXN];
+bool used[MAXN];
+int timer, tin[MAXN], fup[MAXN];
+ 
+void dfs (int v, int p = -1) {
+	used[v] = true;
+	tin[v] = fup[v] = timer++;
+	int children = 0;
+	for (int i = 0; i < g[v].size(); i++) {
+		int to = g[v][i];
+		if (to == p)  continue;
+		if (used[to])
+			fup[v] = min (fup[v], tin[to]);
+		else {
+			dfs (to, v);
+			fup[v] = min (fup[v], fup[to]);
+			if (fup[to] >= tin[v] && p != -1)
+				IS_CUTPOINT(v);
+			children++;
+		}
+	}
+	if (p == -1 && children > 1)
+		IS_CUTPOINT(v);
+}
+ 
+int main() {
+	int n;
+ 
+	timer = 0;
+	for (int i = 0; i < n; i++)
+		used[i] = false;
+	dfs (0);
+}
+\end{lstlisting}
