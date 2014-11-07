@@ -1,0 +1,57 @@
+\chapter{Разное}
+\section{Разбор выражений}
+Дано выражение. Начинаем парсить его функцией E1, которая обрабатывает самые низкоприоритетные операции (в нашем случае '+', '-').
+\begin{lstlisting}[language=Python]
+def E1():
+	res = E2()
+	while True:
+		c = getc()
+		if c == '+':
+			res += E2()
+		elif c == '-':
+			res -= E2()
+		else:
+			putc(c)
+			return res
+\end{lstlisting}
+Сначала происходит обработка атома, стоящего слева от знака ('+', '-'), затем обработка каждого атома между знаками. Обработку этих атомов производит функция $E2()$. Это функция более низкого ранга, которая обрабатывает более приоритетные операции (в нашем случае '*' и '/').
+\begin{lstlisting}[language=Python]
+def E2():
+	res = E3()
+	while True:
+		c = getc()
+		if c == '*':
+			res *= E3()
+		elif c == '/':
+			res /= E3()
+		else:
+			putc(c)
+			return res
+\end{lstlisting}
+Функция работает аналогично $E1()$. Таким образом мы можем поддерживать сколько угодно операций различных приоритетов, добавляя функции.
+
+Перейдем к обработке скобок:
+\begin{lstlisting}[language=Python]
+def E3():
+	if c == '(':
+		res = E1()
+		c = getc()
+		return res
+	else:
+		putc(c)
+		return E4()
+\end{lstlisting}
+Берём символ, если он скобка, тогда обрабатываем выражение внутри и считываем закрывающую скобку.
+
+Теперь рассмотрим считывание числа. Ничего сложного:
+\begin{lstlisting}[language=Python]
+def E4():
+	res = 0
+	while True:
+		c = getc()
+		if str.isdigit(c):
+			res = res * 10 + int(c)
+		else:
+			putc(c)
+			return res
+\end{lstlisting}
