@@ -1,1 +1,40 @@
 \chapter{Строки}
+\section{Алгоритмы, которых нет на e-maxx}
+\subsection{Наибольшая общая подпоследовательность $|S_1| \cdot |S_2|$}
+Задача решается ДП. Состояние будет характеризовать два параметра: длина первой и второй строки. Изначально $dp(n_1,n_2) = 0$. Переход к следующему состоянию \newline
+$dp(n_1, n_2) = \left \{ 
+\begin{array}{ll}
+ 0, n_1 = 0\ or\ n_2 = 0 \\
+ dp(n_1 - 1, n_2 - 1) + 1,  s[n_1] = s[n_2] \\
+ max(dp(n_1 - 1, n_2), dp(n_1, n_2 - 1)),  s[n_1] \neq s[n_2]
+ \end{array}
+ \right.$
+ Чтобы востановить ответ нужно запоминать из какого состояния мы попали в текущее, а в конце пройти из ячейки $dp(|S_1|,|S_2|)$ до $dp(0,0)$ по этому маршруту.
+ \subsection{Наибольшая общая подстрока}
+ Первой строкой входного файла следует цифра обозначающая количество строк в которых следует искать подстроку. Строки для поиска следуют дальше.
+\begin{lstlisting}[language = Python]
+import sys
+list = sys.argv[1:]
+fileName = list[0]
+data = open(fileName).read().splitlines()
+numOfStrings = int(data.pop(0))-1
+data = filter(None, data)
+data.sort(key=len)
+leastStr = data.pop(0)
+maxSharedStr = ''
+while len(leastStr) > len(maxSharedStr):
+    robTestStr = leastStr
+    while len(robTestStr) > len(maxSharedStr):
+        numOfConcidence = 0
+        for compatStr in data:
+            if robTestStr in compatStr:
+                numOfConcidence += 1
+            else:
+                break
+        if numOfConcidence == numOfStrings and len(robTestStr) > len(maxSharedStr):
+            maxSharedStr = robTestStr
+        robTestStr = robTestStr[:-1]
+    leastStr = leastStr[1:]
+print maxSharedStr
+sys.exit(0)
+\end{lstlisting}
