@@ -5,9 +5,8 @@
 
 \begin{lstlisting}[language=C++]
 #include <algorithm>
-template< typename Iterator >
-void bubble_sort(Iter first, Iter last)
-{
+template<typename Iter>
+void bubble_sort(Iter first, Iter last) {
     while(first < --last) {
         for(Iter it = first; it < last; it++) {
             if (*(it + 1) < *it) {
@@ -44,3 +43,61 @@ void select_sort(T first, T last, C c = C()) {
     }
 }
 \end{lstlisting}
+
+\section{Сортировка вставками $O(N^2)$}
+На каждом шаге алгоритма мы выбираем один из элементов входных данных и вставляем его на нужную позицию в уже отсортированном списке, до тех пор, пока набор входных данных не будет исчерпан.\newline
+Алгоритм \textbf{стабилен}, особо эффективен при небольших входных данных (несколько десятков).
+\begin{lstlisting}[language=C++]
+template<class T> 
+void InsertionSort(T *A, int N) {
+    if (N < 2) 
+    	return;
+	for (int i = 1; i < N; i++)
+    	for (int j = i; j && A[j] < A[j-1]; j--)
+        	std::swap(A[j], A[j-1]);
+}
+\end{lstlisting}
+
+\section{Сортировка слиянием $O(N\cdot \log{N})$}
+В основе сортировки слиянием лежит принцип «разделяй и властвуй». Список разделяется на равные или практически равные части, каждая из которых сортируется отдельно. После чего уже упорядоченные части сливаются воедино. Алгоритм \textbf{стабилен}. Кушает $O(N) + O(\log{N})$ памяти. Ниже представлен листинг:
+\begin{enumerate}
+\item Массив рекурсивно разбивается пополам, если размер куска $|a| > 1$
+\item Два единичных массива сливаются в общий результирующий массив, при этом из каждого выбирается меньший элемент (сортировка по возрастанию) и записывается в свободную левую ячейку результирующего массива. После чего из двух результирующих массивов собирается третий общий отсортированный массив, и так далее. В случае если один из массивов закончиться, элементы другого дописываются в собираемый массив
+\item  Элементы перезаписываются из результирующего массива в исходный
+\end{enumerate}
+
+На следующей странице представлена реализация алгоритма:\newpage
+\begin{lstlisting}[language=C++]
+template<typename T>
+void mergeSort(vector<T>& buf, size_t left, size_t right) {
+    if(left >= right)
+    	return;
+  
+ 	size_t mid = (left + right) / 2;
+    MergeSort(buf, left, mid);
+    MergeSort(buf, mid + 1, right);
+    merge(buf, left, right, mid);
+}
+
+template<typename T>
+static void merge(vector<T>& buf, size_t left, size_t right, size_t mid) {
+    if (left >= right || mid < left || mid > right) 
+    	return;
+    if (right == left + 1 && buf[left] > buf[right]) {
+        swap(buf[left], buf[right]);
+        return;
+    }
+ 
+    vector<T> tmp(&buf[left], &buf[left] + (right + 1));
+    for (size_t i = left, j = 0, k = mid - left + 1; i <= right; i++) {
+        if (j > mid - left) {      
+            buf[i] = tmp[k++];
+        } else if(k > right - left) {
+            buf[i] = tmp[j++];
+        } else {
+            buf[i] = (tmp[j] < tmp[k]) ? tmp[j++] : tmp[k++];
+        }
+    }
+}
+\end{lstlisting}
+.
