@@ -55,3 +55,15 @@ def E4():
 			putc(c)
 			return res
 \end{lstlisting}
+
+\section{Перевод между системами счистления}
+На Питоне очень просто:
+\begin{lstlisting}[language=Python]
+def metabase(n, to):
+    def baseN(num,b,numerals="0123456789abcdefghijklmnopqrstuvwxyz"):
+        return ((num == 0) and numerals[0]) or (baseN(num // b, b, numerals).lstrip(numerals[0]) + numerals[num % b])
+    return baseN(int(str(n[0]), n[1]), to)
+
+print(metabase((2147483647, 10), 16))
+# Output: 7fffffff
+\end{lstlisting}

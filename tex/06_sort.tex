@@ -1,0 +1,46 @@
+\chapter{Сортировки}
+\section{Сортировка пузырьком $O(N^2)$}
+Алгоритм состоит из повторяющихся проходов по сортируемому массиву. За каждый проход элементы последовательно сравниваются попарно и, если порядок в паре неверный, выполняется обмен элементов. \newline
+Алгоритм \textbf{устойчив}
+
+\begin{lstlisting}[language=C++]
+#include <algorithm>
+template< typename Iterator >
+void bubble_sort(Iter first, Iter last)
+{
+    while(first < --last) {
+        for(Iter it = first; it < last; it++) {
+            if (*(it + 1) < *it) {
+            	std::iter_swap(it, it + 1);
+            }
+		}
+	}
+}
+\end{lstlisting}
+
+\section{Сортировка выбором $O(N^2)$}
+Алгоритм может быть \textbf{как устойчивым, так и неустойчивым}
+Ниже представлены листинги \textbf{устойчивого} алгоритма:
+\begin{enumerate}
+\item Берём минимальный элемент в массиве
+\item Вставляем значение этого элемента на первую неотсортированную позицию, при этом не меняя порядок остальных элементов
+\item Сортируем "хвост" массива, убрав уже отсортированный промежуток
+\end{enumerate}
+\begin{lstlisting}[language=C++]
+template <typename T, typename C = less<typename T::value_type> >
+void select_sort(T first, T last, C c = C()) {
+	if (first != last) {
+        while (first != last - 1) {
+            T mn = first;
+            for (T i = first + 1; i != last; i++) {
+                if (c(*i, *mn)) {
+                    typename T::value_type tmp = *mn;
+                    *mn = *i;
+                    *i = tmp;
+                }
+            }
+            first++;
+        }
+    }
+}
+\end{lstlisting}
