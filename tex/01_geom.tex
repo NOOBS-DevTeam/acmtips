@@ -1,1 +1,155 @@
 \chapter{Геометрия}
+\section{Примитивы}
+Для начала введём геометрические структуры, такие как точка, отрезок, вектор, прямая, окружность…\newline
+\textbf{Точка}\newline
+\begin{lstlisting}[language=C++]
+struct point {
+    double x, y;
+    point (double _x, double _y) : x(_x), y(_y) {}
+};
+\end{lstlisting}
+\textbf{Отрезок}
+\begin{lstlisting}[language=C++]
+struct segment {
+    point a, b;
+    segment () {}
+    segment (point _a, point _b) : a(_a), b(_b) {}
+};
+\end{lstlisting}
+\textbf{Вектор}
+\begin{lstlisting}[language=C++]
+struct _vector {
+    point v;
+    _vector (double x, double y) : v(point(x, y)) {}
+    _vector (point a, point b) : v(point(a.x - b.x, a.y - b.y)) {}
+};
+\end{lstlisting}
+\textbf{Прямая}
+\begin{lstlisting}[language=C++]
+struct line {
+    double a, b, c;
+    line (point a, point b) : a(a.y - b.y), b(b.x - a.x), c(a.x * b.y - b.x * a.y) {}
+};
+\end{lstlisting}
+\textbf{Окружность}
+\begin{lstlisting}[language=C++]
+struct circle {
+    point c;
+    double r;
+    circle (point a, double _r) : c(a), r(_r) {}
+};
+\end{lstlisting}
+
+\section{Полезности и точность}
+Нам понадобятся полезные функции: поиск расстояния между точками, сравнение чисел с плавающей точкой и т.д. \newline
+\textit{Стандартные функции содержатся в <cmath>}
+\begin{lstlisting}[language=C++]
+#include <cmath>
+double dist(point a, point b) {
+    return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+}
+\end{lstlisting}
+Для сравнения вещественных чисел следует использовать \textbf{\textit{EPS}}:
+\begin{lstlisting}[language=C++]
+const double EPS = 1e-6;
+bool is_equal(double a, double b) {
+    return (abs(a - b) <= EPS) ? 1 : 0;
+}
+\end{lstlisting}
+Все стандартные функции C++ (как и многих других языков) считают углы в радианах. Перевод в градусы:\newline
+\begin{lstlisting}[language=C++]
+double to_degree(double an) {
+    return an * 180.0 / M_PI;
+}
+\end{lstlisting}
+(\textit{Что к чему это здесь?})Проверка точки на принадлежность прямоугольнику:
+\begin{lstlisting}[language=C++]
+bool in_square(point a, point b, point c) {
+	return (min(a.x, b.x) <= c.x && c.x <= max(a.x, b.x) 
+		&& min(a.y, b.y) <= c.y && c.y <= max(a.y, b.y));
+}
+\end{lstlisting}
+
+\section{Типовые операции в геометрии}
+Рассмотрим реализацию различных геометрических ситуаций. 
+
+\subsection{Пересечение прямых}
+
+Примечание: \textit{ как угловой коэффициент линейной функции, это $\tan$ угла наклона прямой относительно положительной полуоси $Ox$, то у него существует значение, при котором он не существует: $90$ градусов. Поэтому возникают деления на нуль и это объясняет большое количество случаев.}
+\newline Проверка на факт пересечения
+\begin{lstlisting}[language=C++]
+bool cross_lines(line l1, line l2) {
+    if (abs(l1.b - 0.0) < EPS && abs(l2.b - 0.0) < EPS) //если параллельны oY
+        return 0;
+    else if (abs((l1.a / l1.b) - (l2.a / l2.b)) < EPS) //если угловые совпали
+        return 0;
+    else
+        return 1;
+}
+\end{lstlisting}
+Теперь давайте найдём точку пересечения\newline
+Примечание: \textit{Можно использовать, только проверив, что пересечение существует}\newline
+\begin{lstlisting}[language=C++]
+point cross_lines2(line l1, line l2) {
+    double k1 = -1.0 * (l1.a / l1.b); //угловой коэфициент 1 прямой
+    double b1 = -1.0 * (l1.c / l1.b); //свободный коэфициент 1 прямой
+    double k2 = -1.0 * (l2.a / l2.b); //угловой коэфициент 2 прямой
+    double b2 = -1.0 * (l2.c / l2.b); //свободный коэфициент 2 прямой
+    point ans;
+    if (is_equal(l1.b, 0.0) && !is_equal(l2.b, 0.0)) // если 1 прямая || Oy
+        ans = point((-1.0 * (l1.c / l1.a)), (-1.0 * (l1.c / l1.a)) * k2 + b2);
+    else if (!is_equal(l1.b, 0.0) && is_equal(l2.b, 0.0)) // если 2 прямая || Oy
+        ans = point((-1.0 * (l2.c / l2.a)), (-1.0 * (l2.c / l2.a)) * k1 + b1);
+    else // если пересекаются
+        ans = point((b2 - b1) / (k1 - k2), ((b2 - b1) / (k1 - k2)) * k1 + b1);
+    return ans;
+}
+\end{lstlisting}
+
+\subsection{Пересечение отрезков}
+\textit{Примечание: ищет только точку пересечения. В случае наложения отрезков срабатывает условия, что они параллельны}
+\begin{lstlisting}[language=C++]
+point cross_segments(segment s1, segment s2) {
+    //строим линни по двум точкам отрезков
+	line l1 = line(s1.a, s1.b);
+    line l2 = line(s2.a, s2.b);
+    if (cross_lines(l1, l2)) {//убеждаемся, что прямые пересекаются
+     			point crs = cross_lines2(l1, l2);//точка пересечения прямых
+	//проверяем, что точка принадлежит отрезкам
+      			if (in_square(point(s1.a.x, s1.a.y), point(s1.b.x, s1.b.y), crs) && 						in_square(point(s2.a.x, s2.a.y), point(s2.b.x, s2.b.y), crs))
+          			return crs;
+   	 	}
+}
+\end{lstlisting}
+
+\section{Операции над векторами}
+Выше приведенная структура вектора в своём конструкторе формирует из двух точек радиус-вектор. Чаще всего удобнее работать именно с такими векторами.\newline
+\subsection{Скалярное произведение}
+Скалярное произведение векторов – скалярная величина численно равная сумме произведений соответствующих координат\newline
+$(a,b) = a_xb_x + a_yb_y$\newline
+или прозведению модулей векторов на $\cos$ угла между ними\newline
+$(a,b) = |a|\cdot |b|\cdot \cos{\phi}$\newline
+\begin{lstlisting}[language=C++]
+double cross_product(_vector a, _vector b) {
+	return (a.v.x * b.v.x + a.v.y * b.v.y);
+}
+\end{lstlisting}
+Векторным произведением двух трехмерных векторов $a(a_x, a_y, a_z)$ и $b(b_x, b_y, b_z)$ является вектор $c$ с координатами $(a_yb_z - a_zb_y, a_zb_x - a_xb_z, a_xb_y - a_yb_x)$. Этот вектор перпендикулярен плоскости, в которой
+расположены вектора $a$ и $b$. Но мы рассматриваем геометрию на плоскости, поэтому результатом век-
+торного произведения двух векторов, лежащих в плоскости $XOY$ будет вектор, коллинеарный оси $OZ$, и поэтому его можно представить в виде одного числа — координаты $c_z$
+\subsection{Поворот вектора}
+Поворот вектора 
+Для того чтобы повернуть вектор на заданный угол, нужно:\newline
+
+$x' = x\cos{\alpha} - y\sin{\alpha}$\newline
+$y' = x\sin{\alpha} + y\cos{\alpha}$\newline
+Из этого следует код.\newline
+Примечание: \textit{следует помнить, что использование sin и cos ведёт к частичной потери точности}
+\begin{lstlisting}[language=C++]
+_vector turn_vector(_vector a, double angle) {
+    	double new_x = a.v.x * cos(angle) - a.v.y * sin(angle);
+    	double new_y = a.v.x * sin(angle) - a.v.y * cos(angle);
+    	return _vector(new_x, new_y);
+}
+\end{lstlisting}
+Примечание: угол полярный, в радианах.
